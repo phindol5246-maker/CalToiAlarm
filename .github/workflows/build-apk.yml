@@ -1,0 +1,32 @@
+name: Build debug APK
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'CalToiAlarm_Pro_Reviewed.zip'
+      - '.github/workflows/build-apk.yml'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unpack Android project
+        run: unzip -q CalToiAlarm_Pro_Reviewed.zip
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - name: Install Android SDK 35
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Compile debug APK
+        working-directory: CalToiAlarm_Pro
+        run: gradle :app:assembleDebug --stacktrace
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CalToiAlarm-debug-apk
+          path: CalToiAlarm_Pro/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
